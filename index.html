@@ -247,9 +247,37 @@ function checkAndGenerate() {
         });
     }
 
-    async function generateWord() {
-        const { Document, Packer, Paragraph, TextRun, HeadingLevel, ImageRun } = docx;
-        const children = [new Paragraph({ text: "Woningopname Rapport", heading: HeadingLevel.HEADING_1 })];
+async function generateWord() {
+        const { Document, Packer, Paragraph, TextRun, HeadingLevel, ImageRun, AlignmentType } = docx;
+        const children = [];
+
+        // --- START LOGO ---
+        try {
+            // VERVANG de tekst hieronder ("PLAK_HIER_JE_LANGE_CODE") door de Base64 code van jouw logo.
+            // Let op dat je de aanhalingstekens " " laat staan!
+            const logoBase64 = "PLAK_HIER_JE_LANGE_CODE";
+            
+            const response = await fetch(logoBase64);
+            const buffer = await response.arrayBuffer();
+
+            children.push(new Paragraph({
+                children: [
+                    new ImageRun({
+                        data: buffer,
+                        transformation: { width: 200, height: 200 } // Pas getallen aan om logo groter/kleiner te maken
+                    })
+                ],
+                alignment: AlignmentType.CENTER
+            }));
+            
+            children.push(new Paragraph({ text: "" })); // Witregel onder logo
+            
+        } catch (error) {
+            console.warn("Logo kon niet worden geladen.", error);
+        }
+        // --- EINDE LOGO ---
+
+        children.push(new Paragraph({ text: "Woningopname Rapport", heading: HeadingLevel.HEADING_1 }));
         for (const q of questions) {
             const card = document.getElementById(`card_${q.id}`);
             if (!card || card.classList.contains('hidden')) continue;
